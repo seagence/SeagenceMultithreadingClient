@@ -4,6 +4,7 @@ A test client to test Seagence to detect Multithreading defect.
 
 ## To build
 cd SeagenceMultithreadingClient
+
 mvn clean package
 
 ## To Run
