@@ -37,45 +37,10 @@ public class VirtualUsersForMultithreadingDefect {
 		if (args.length == 2) {
 			totalNumberOfRequestsToSend = Integer.parseInt(args[1]);
 		}
-//		System.out.println("Establish session");
-//		establishSession();
-//		System.out.println("Session established");
 		System.out.println("Starting with " + numberOfVirtualUsers + " threads and " + totalNumberOfRequestsToSend
 				+ " total requests");
 		createVirtualUsersAdnSubmit(numberOfVirtualUsers, totalNumberOfRequestsToSend);
 		System.out.println("Done...");
-	}
-
-	public static String establishSession() {
-
-		try (final CloseableHttpClient httpclient = HttpClients.createDefault()) {
-
-			HttpClientContext context = HttpClientContext.create();
-			ClassicHttpRequest httpPost = ClassicRequestBuilder.post("http://localhost:8083")
-					.setEntity(new UrlEncodedFormEntity(Arrays.asList())).build();
-			httpPost.setHeader("Accept", "application/json, text/javascript, */*; q=0.01");
-			httpPost.setHeader("Accept-Language", "en-US,en;q=0.9");
-			httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-			httpPost.setHeader("Origin", "http://localhost:8083");
-			httpPost.setHeader("User-Agent",
-					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-
-			String resultTemp = httpclient.execute(httpPost, context, response -> {
-				String sessionId = null;
-				org.apache.hc.core5.http.Header setCookieHeader = response.getHeader("Set-Cookie");
-				if (setCookieHeader != null) {
-					sessionId = setCookieHeader.getValue();
-					sessionId = sessionId.substring(sessionId.indexOf("=") + 1/* , sessionId.indexOf(";") */);
-					return sessionId;
-				} else {
-					return null;
-				}
-			});
-			return resultTemp;
-		} catch (IOException exc) {
-			exc.printStackTrace();
-		}
-		return null;
 	}
 
 	public static void createVirtualUsersAdnSubmit(int numberOfVirtualUsers, int totalNumberOfRequestsToSend)
@@ -92,9 +57,6 @@ public class VirtualUsersForMultithreadingDefect {
 		String sessionId = null;
 		for (int i = 0; i < totalNumberOfRequestsToSend; i++) {
 			int productIdIndex = i % productIds.length;
-			if(productIdIndex == 0) {
-				sessionId = establishSession();
-			}
 			
 			callables.add(new LocalCallable(productIds[productIdIndex], sessionId));
 		}
@@ -111,8 +73,6 @@ public class VirtualUsersForMultithreadingDefect {
 
 		@Override
 		public String call() {
-			System.out.println("productIdIndex="+productId);
-			System.out.println("sessionId="+sessionId);
 		try (final CloseableHttpClient httpclient = HttpClients.createDefault()) {
 				final BasicCookieStore cookieStore = new BasicCookieStore();
 
